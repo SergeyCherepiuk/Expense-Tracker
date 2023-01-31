@@ -23,14 +23,14 @@ fun HeaderInfo(balance: Double, currentFraction: Float) {
     ) {
         Text(
             text = "Spent this month",
-            style = MaterialTheme.typography.body1,
+            style = MaterialTheme.typography.h2,
             fontSize = (18 - (1f - currentFraction) * 10).sp,
             color = Color.Gray
         )
         Row {
             Text(
                 text = "$",
-                style = MaterialTheme.typography.body1,
+                style = MaterialTheme.typography.h1,
                 fontSize = (48 - (1f - currentFraction) * 30).sp,
                 color = Color.Gray,
                 modifier = Modifier
@@ -38,13 +38,13 @@ fun HeaderInfo(balance: Double, currentFraction: Float) {
             )
             Text(
                 text = String.format("%d", balance.toInt()),
-                style = MaterialTheme.typography.body2,
+                style = MaterialTheme.typography.h3,
                 fontSize = (72 - (1f - currentFraction) * 30).sp,
                 color = Color.Black
             )
             Text(
                 text = String.format("%.2f", balance % 1).substringAfter('0'),
-                style = MaterialTheme.typography.body1,
+                style = MaterialTheme.typography.h1,
                 fontSize = (48 - (1f - currentFraction) * 30).sp,
                 color = Color.Black,
                 modifier = Modifier

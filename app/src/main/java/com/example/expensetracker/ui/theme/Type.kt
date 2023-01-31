@@ -31,13 +31,17 @@ val  Poppins = FontFamily(
 )
 
 val Typography = Typography(
-    body1 = TextStyle(
+    h1 = TextStyle(
         fontFamily = Poppins,
         fontWeight = FontWeight.Normal
     ),
-    body2 = TextStyle(
+    h2 = TextStyle(
         fontFamily = Poppins,
         fontWeight = FontWeight.Medium
+    ),
+    h3 = TextStyle(
+        fontFamily = Poppins,
+        fontWeight = FontWeight.SemiBold
     ),
 
     /* Other default text styles to override

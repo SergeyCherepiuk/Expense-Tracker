@@ -25,7 +25,7 @@ fun ExpenseItem(item: Item) {
         ) {
             Text(
                 text = item.emoji,
-                style = MaterialTheme.typography.body1,
+                style = MaterialTheme.typography.h1,
                 fontSize = 28.sp
             )
         }
@@ -38,13 +38,13 @@ fun ExpenseItem(item: Item) {
         ) {
             Text(
                 text = item.text,
-                style = MaterialTheme.typography.body1,
+                style = MaterialTheme.typography.h2,
                 color = Color.Black,
                 fontSize = 20.sp
             )
             Text(
                 text = item.category,
-                style = MaterialTheme.typography.body1,
+                style = MaterialTheme.typography.h2,
                 color = Color.Gray,
                 fontSize = 14.sp
 
@@ -58,7 +58,7 @@ fun ExpenseItem(item: Item) {
         ) {
             Text(
                 text = String.format("$%.2f", item.price),
-                style = MaterialTheme.typography.body1,
+                style = MaterialTheme.typography.h2,
                 color = Color.Black,
                 fontSize = 20.sp
             )
