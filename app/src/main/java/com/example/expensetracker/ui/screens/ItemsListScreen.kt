@@ -6,7 +6,6 @@ import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -32,20 +31,18 @@ fun ItemsListScreen(viewModel: ItemViewModel) {
         initialValue = BottomSheetValue.Collapsed,
         animationSpec = tween(
             durationMillis = 500,
-            easing = CubicBezierEasing(a = 0.1f, b = 0.75f,c = 0.3f,d = 1f)
+            easing = CubicBezierEasing(a = 0.1f, b = 0.75f, c = 0.3f, d = 1f)
         )
     )
-    val scaffoldState = rememberBottomSheetScaffoldState(
-        bottomSheetState = sheetState
-    )
+    val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = sheetState)
 
     val items = viewModel.items.collectAsState()
+    val groupedItems = viewModel.groupedItems.collectAsState()
 
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
         sheetPeekHeight = 450.dp,
         sheetElevation = 20.dp,
-        sheetShape = RoundedCornerShape(topStart = 25.dp, topEnd = 25.dp),
         sheetContent = {
             Box(
                 contentAlignment = Alignment.TopCenter,
@@ -54,7 +51,7 @@ fun ItemsListScreen(viewModel: ItemViewModel) {
                     .background(Color.White)
             ) {
                 ItemsList(
-                    items = items.value,
+                    groupedItems = groupedItems.value,
                     sheetState = sheetState
                 )
             }
@@ -73,18 +70,10 @@ fun ItemsListScreen(viewModel: ItemViewModel) {
 
             Row(
                 horizontalArrangement = Arrangement.SpaceEvenly,
-                modifier = Modifier
-                    .fillMaxWidth()
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Button(onClick = {
-                    viewModel.addItem(Item(
-                        id = null,
-                        emoji = Constants.emojis[Random.nextInt(until = Constants.emojis.size-1)],
-                        text = "Text",
-                        category = "Category",
-                        price = Random.nextDouble(from = 0.01, until = 500.0),
-                        date = Constants.dates[Random.nextInt(until = Constants.dates.size-1)]
-                    ))
+                    addRandomItem(viewModel = viewModel)
                 }) {
                     Text(text = "Add item")
                 }
@@ -96,4 +85,16 @@ fun ItemsListScreen(viewModel: ItemViewModel) {
             }
         }
     }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun addRandomItem(viewModel: ItemViewModel) {
+    viewModel.addItem(Item(
+        id = null,
+        emoji = Constants.emojis[Random.nextInt(until = Constants.emojis.size-1)],
+        text = "Text",
+        category = "Category",
+        price = Random.nextDouble(from = 0.01, until = 500.0),
+        date = Constants.dates[Random.nextInt(until = Constants.dates.size-1)]
+    ))
 }

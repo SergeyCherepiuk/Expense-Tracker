@@ -20,24 +20,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.expensetracker.models.Item
 import com.example.expensetracker.ui.items.ExpenseItem
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
 @Composable
-fun ItemsList(items: List<Item>, sheetState: BottomSheetState) {
-    val groupedItems = items
-        .sortedBy { item -> item.date }
-        .reversed()
-        .groupBy { item -> item.date }
-
+fun ItemsList(groupedItems: Map<LocalDate, List<Item>>, sheetState: BottomSheetState) {
     val listState = rememberLazyListState()
-
-    LazyColumn(state = listState) {
+    LazyColumn(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        state = listState
+    ) {
         groupedItems.forEach { (date, items) ->
             stickyHeader {
-                val formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
-                ItemsListDate(date.format(formatter))
+                ItemsListDate(date)
             }
             items(items.size) {index ->
                 ExpenseItem(items[index])
@@ -54,8 +51,10 @@ fun ItemsList(items: List<Item>, sheetState: BottomSheetState) {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun ItemsListDate(text: String) {
+fun ItemsListDate(date: LocalDate) {
+    val formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
@@ -65,7 +64,7 @@ fun ItemsListDate(text: String) {
 
     ) {
         Text(
-            text = text,
+            text = date.format(formatter),
             style = MaterialTheme.typography.h2,
             color = Color.Gray,
             fontSize = 18.sp

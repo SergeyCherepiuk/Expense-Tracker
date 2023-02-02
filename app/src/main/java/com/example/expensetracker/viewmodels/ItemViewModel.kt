@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 class ItemViewModel(context: Context) : ViewModel() {
     private val database = Room.databaseBuilder(
@@ -23,9 +24,17 @@ class ItemViewModel(context: Context) : ViewModel() {
     private val _items = MutableStateFlow(value = emptyList<Item>().toMutableList())
     val items: StateFlow<List<Item>> get() = _items.asStateFlow()
 
+    private val _groupedItems = MutableStateFlow(value = emptyMap<LocalDate, List<Item>>().toMutableMap())
+    val groupedItems: StateFlow<Map<LocalDate, List<Item>>> get() = _groupedItems.asStateFlow()
+
     init {
         CoroutineScope(Dispatchers.IO).launch {
             _items.value = database.itemDao().getItems().toMutableList()
+            _groupedItems.value = _items.value
+                .sortedBy { item -> item.date }
+                .reversed()
+                .groupBy { item -> item.date }
+                .toMutableMap()
         }
     }
 
@@ -33,6 +42,11 @@ class ItemViewModel(context: Context) : ViewModel() {
         CoroutineScope(Dispatchers.IO).launch {
             database.itemDao().insert(item)
             _items.value = (_items.value + item).toMutableList()
+            _groupedItems.value = _items.value
+                .sortedBy { item -> item.date }
+                .reversed()
+                .groupBy { item -> item.date }
+                .toMutableMap()
         }
     }
 
@@ -40,6 +54,7 @@ class ItemViewModel(context: Context) : ViewModel() {
         CoroutineScope(Dispatchers.IO).launch {
             database.itemDao().clear()
             _items.value = emptyList<Item>().toMutableList()
+            _groupedItems.value = emptyMap<LocalDate, List<Item>>().toMutableMap()
         }
     }
 }
