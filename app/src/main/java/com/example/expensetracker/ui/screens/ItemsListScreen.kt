@@ -3,31 +3,31 @@ package com.example.expensetracker.ui.screens
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.expensetracker.items
 import com.example.expensetracker.models.Item
 import com.example.expensetracker.ui.components.HeaderInfo
+import com.example.expensetracker.ui.components.ItemsList
 import com.example.expensetracker.ui.theme.LightGray200
+import com.example.expensetracker.utils.Constants
 import com.example.expensetracker.utils.currentFraction
+import com.example.expensetracker.viewmodels.ItemViewModel
+import kotlin.random.Random
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun ItemsListScreen(items: List<Item>) {
+fun ItemsListScreen(viewModel: ItemViewModel) {
     val sheetState = rememberBottomSheetState(
         initialValue = BottomSheetValue.Collapsed,
         animationSpec = tween(
@@ -39,6 +39,8 @@ fun ItemsListScreen(items: List<Item>) {
         bottomSheetState = sheetState
     )
 
+    val items = viewModel.items.collectAsState()
+
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
         sheetPeekHeight = 450.dp,
@@ -46,13 +48,13 @@ fun ItemsListScreen(items: List<Item>) {
         sheetShape = RoundedCornerShape(topStart = 25.dp, topEnd = 25.dp),
         sheetContent = {
             Box(
-                contentAlignment = Alignment.Center,
+                contentAlignment = Alignment.TopCenter,
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color.White)
             ) {
                 ItemsList(
-                    items = items,
+                    items = items.value,
                     sheetState = sheetState
                 )
             }
@@ -66,15 +68,32 @@ fun ItemsListScreen(items: List<Item>) {
                 .offset(y = -(1f - scaffoldState.currentFraction).dp * 100)
                 .background(LightGray200)
         ) {
-            val balance: Double = items.sumOf { item -> item.price }
+            val balance: Double = items.value.sumOf { item -> item.price }
             HeaderInfo(balance, scaffoldState.currentFraction)
+
+            Row(
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                Button(onClick = {
+                    viewModel.addItem(Item(
+                        id = null,
+                        emoji = Constants.emojis[Random.nextInt(until = Constants.emojis.size-1)],
+                        text = "Text",
+                        category = "Category",
+                        price = Random.nextDouble(from = 0.01, until = 500.0),
+                        date = Constants.dates[Random.nextInt(until = Constants.dates.size-1)]
+                    ))
+                }) {
+                    Text(text = "Add item")
+                }
+                Button(onClick = {
+                    viewModel.clear()
+                }) {
+                    Text(text = "Clear")
+                }
+            }
         }
     }
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    ItemsListScreen(items)
 }
