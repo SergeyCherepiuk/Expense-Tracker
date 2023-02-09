@@ -7,18 +7,33 @@ import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import com.example.expensetracker.ui.screens.ItemsListScreen
+import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import com.example.expensetracker.ui.home.HomeScreen
+import com.example.expensetracker.ui.home.HomeViewModel
 import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
-import com.example.expensetracker.viewmodels.ItemViewModel
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            ExpenseTrackerTheme {
-                ItemsListScreen(viewModel = ItemViewModel(this))
+        val homeViewModel = HomeViewModel(application = application)
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                setContent {
+                    ExpenseTrackerTheme {
+                        val uiState = homeViewModel.uiState.collectAsState()
+                        HomeScreen(
+                            viewModel = homeViewModel,
+                            uiState = uiState.value
+                        )
+                    }
+                }
             }
         }
+
     }
 }

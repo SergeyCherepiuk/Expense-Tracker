@@ -8,52 +8,44 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import com.example.expensetracker.R
 
-// Set of Material typography styles to start with
-val  Poppins = FontFamily(
-    Font(R.font.poppins_black, FontWeight.Black),
-    Font(R.font.poppins_black_italic, FontWeight.Black, FontStyle.Italic),
-    Font(R.font.poppins_bold, FontWeight.Bold),
-    Font(R.font.poppins_bold_italic, FontWeight.Bold, FontStyle.Italic),
-    Font(R.font.poppins_extrabold, FontWeight.ExtraBold),
-    Font(R.font.poppins_extrabold_italic, FontWeight.ExtraBold, FontStyle.Italic),
-    Font(R.font.poppins_extralight, FontWeight.ExtraLight),
-    Font(R.font.poppins_extralight_italic, FontWeight.ExtraLight, FontStyle.Italic),
-    Font(R.font.poppins_italic, FontWeight.Normal, FontStyle.Italic),
-    Font(R.font.poppins_light, FontWeight.Light),
-    Font(R.font.poppins_light_italic, FontWeight.Light, FontStyle.Italic),
-    Font(R.font.poppins_medium, FontWeight.Medium),
-    Font(R.font.poppins_medium_italic, FontWeight.Medium, FontStyle.Italic),
-    Font(R.font.poppins_regular, FontWeight.Normal),
-    Font(R.font.poppins_semibold, FontWeight.SemiBold),
-    Font(R.font.poppins_semibold_italic, FontWeight.SemiBold, FontStyle.Italic),
-    Font(R.font.poppins_thin, FontWeight.Thin),
-    Font(R.font.poppins_thin_italic, FontWeight.Thin, FontStyle.Italic),
+val SourceSans3 = FontFamily(
+    Font(R.font.sourcesans3_black, FontWeight.Black),
+    Font(R.font.sourcesans3_blackitalic, FontWeight.Black, FontStyle.Italic),
+    Font(R.font.sourcesans3_bold, FontWeight.Bold),
+    Font(R.font.sourcesans3_bolditalic, FontWeight.Bold, FontStyle.Italic),
+    Font(R.font.sourcesans3_extrabold, FontWeight.ExtraBold),
+    Font(R.font.sourcesans3_extrabolditalic, FontWeight.ExtraBold, FontStyle.Italic),
+    Font(R.font.sourcesans3_extralight, FontWeight.ExtraLight),
+    Font(R.font.sourcesans3_extralightitalic, FontWeight.ExtraLight, FontStyle.Italic),
+    Font(R.font.sourcesans3_italic, FontWeight.Normal, FontStyle.Italic),
+    Font(R.font.sourcesans3_light, FontWeight.Light),
+    Font(R.font.sourcesans3_lightitalic, FontWeight.Light, FontStyle.Italic),
+    Font(R.font.sourcesans3_medium, FontWeight.Medium),
+    Font(R.font.sourcesans3_mediumitalic, FontWeight.Medium, FontStyle.Italic),
+    Font(R.font.sourcesans3_regular, FontWeight.Normal),
+    Font(R.font.sourcesans3_semibold, FontWeight.SemiBold),
+    Font(R.font.sourcesans3_semibolditalic, FontWeight.SemiBold, FontStyle.Italic),
+)
+
+val NotoEmoji = FontFamily(
+    Font(R.font.notoemoji_bold, FontWeight.Bold),
+    Font(R.font.notoemoji_light, FontWeight.Light),
+    Font(R.font.notoemoji_medium, FontWeight.Medium),
+    Font(R.font.notoemoji_regular, FontWeight.Normal),
+    Font(R.font.notoemoji_semibold, FontWeight.SemiBold),
 )
 
 val Typography = Typography(
     h1 = TextStyle(
-        fontFamily = Poppins,
+        fontFamily = SourceSans3,
         fontWeight = FontWeight.Normal
     ),
     h2 = TextStyle(
-        fontFamily = Poppins,
+        fontFamily = SourceSans3,
         fontWeight = FontWeight.Medium
     ),
     h3 = TextStyle(
-        fontFamily = Poppins,
+        fontFamily = SourceSans3,
         fontWeight = FontWeight.SemiBold
     ),
-
-    /* Other default text styles to override
-    button = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.W500,
-        fontSize = 14.sp
-    ),
-    caption = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 12.sp
-    )
-    */
 )
