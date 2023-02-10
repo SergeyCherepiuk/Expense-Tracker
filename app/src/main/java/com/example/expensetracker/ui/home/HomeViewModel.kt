@@ -1,15 +1,14 @@
 package com.example.expensetracker.ui.home
 
 import com.example.expensetracker.model.Expense
-import android.app.Application
+import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.room.Room
-import com.example.expensetracker.database.Database
+import com.example.expensetracker.database.AppDatabase
 import com.example.expensetracker.utils.Constants
-import com.example.expensetracker.utils.LocalDateConverter
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,32 +17,46 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import kotlin.random.Random
 
+@RequiresApi(Build.VERSION_CODES.O)
 data class HomeUiState(
     val expenses: List<Expense> = listOf(),
+    val isLoading: Boolean = false,
+    val addExpenseItem: () -> Unit,
+    val clearAllExpenseItems: () -> Unit
 )
 
-fun HomeUiState.getTotal(): Double = expenses.sumOf { it.price }
+val HomeUiState.getTotal: Double get() = expenses.sumOf { it.price }
 
-fun HomeUiState.groupByDate(): Map<LocalDate, List<Expense>> {
-    return expenses
+val HomeUiState.groupedByDate: Map<LocalDate, List<Expense>>
+    get() =  expenses
         .sortedByDescending { it.date }
         .groupBy { it.date }
-}
 
-fun HomeUiState.isEmpty(): Boolean = expenses.isEmpty()
+val HomeUiState.isEmpty: Boolean get() = expenses.isEmpty()
 
+@RequiresApi(Build.VERSION_CODES.O)
 class HomeViewModel(
-    application: Application
-) : AndroidViewModel(application) {
-    private val database = Room.databaseBuilder(
-        context = application.applicationContext,
-        klass = Database::class.java,
-        name = "database"
-    ).addTypeConverter(LocalDateConverter()).build()
-
-    // TODO: Don't use getAllExpenses from ExpensesDao for some reasons
-    private val _uiState: MutableStateFlow<HomeUiState> = MutableStateFlow(HomeUiState())
+    context: Context
+) : ViewModel() {
+    private val database = AppDatabase.getInstance(context)
+    private var _uiState: MutableStateFlow<HomeUiState> = MutableStateFlow(HomeUiState(
+        isLoading = true,
+        addExpenseItem = { addRandomItem() },
+        clearAllExpenseItems = { clear() }
+    ))
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            // delay(1000) // artificial delay
+            _uiState.update {
+                it.copy(
+                    expenses = database.expenseDao().getExpenses(),
+                    isLoading = false
+                )
+            }
+        }
+    }
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun addRandomItem() { // for testing only

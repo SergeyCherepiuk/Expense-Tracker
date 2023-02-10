@@ -5,6 +5,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -22,9 +23,13 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.expensetracker.R
 import com.example.expensetracker.ui.theme.*
 import com.example.expensetracker.utils.currentFraction
 import java.time.LocalDate
@@ -35,7 +40,6 @@ import kotlin.math.sqrt
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel,
     uiState: HomeUiState
 ) {
     val sheetState = rememberBottomSheetState(
@@ -63,7 +67,6 @@ fun HomeScreen(
         }
     ) {
         Header(
-            viewModel = viewModel,
             scaffoldState = scaffoldState,
             uiState = uiState
         )
@@ -84,14 +87,42 @@ private fun BottomSheetContent(
             .background(LightGray)
             .padding(horizontal = 20.dp)
     ) {
-        if (uiState.isEmpty()) {
-            // TODO: Image for no expenses
-        } else {
-            ItemsList(
+        when {
+            uiState.isLoading -> CircularProgressIndicator(
+                color = DarkGray,
+                strokeWidth = 4.dp,
+                modifier = Modifier.align(Alignment.Center)
+            )
+            uiState.isEmpty -> EmptyBottomSheet()
+            else -> ItemsList(
                 sheetState = sheetState,
                 uiState = uiState
             )
         }
+    }
+}
+
+@Composable
+fun EmptyBottomSheet() {
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        Text(
+            text = "No expenses yet",
+            fontSize = 32.sp,
+            fontFamily = SourceSans3,
+            fontWeight = FontWeight.Bold,
+            color = DarkGray
+        )
+        Image(
+            painter = painterResource(id = R.drawable.empty_box),
+            contentDescription = null,
+            modifier = Modifier
+                .size(256.dp)
+        )
     }
 }
 
@@ -107,7 +138,7 @@ private fun ItemsList(
         horizontalAlignment = Alignment.CenterHorizontally,
         state = listState
     ) {
-        val groupedExpenses: Map<LocalDate, List<Expense>> = uiState.groupByDate()
+        val groupedExpenses: Map<LocalDate, List<Expense>> = uiState.groupedByDate
         item {
             Spacer(
                 modifier = Modifier
@@ -252,7 +283,6 @@ fun ExpenseItem(
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun Header(
-    viewModel: HomeViewModel,
     scaffoldState: BottomSheetScaffoldState,
     uiState: HomeUiState
 ) {
@@ -278,19 +308,31 @@ private fun Header(
                 fontWeight = FontWeight.Bold,
                 color = LightYellow,
                 modifier = Modifier.clickable {
-                    viewModel.clear()
+                    uiState.clearAllExpenseItems()
                 }
             )
             Text(
-                text = String.format("$%.2f", uiState.getTotal()),
+                text = String.format("$%.2f", uiState.getTotal),
                 fontSize = 58.sp,
                 fontFamily = SourceSans3,
                 fontWeight = FontWeight.Bold,
                 color = LightYellow,
                 modifier = Modifier.clickable {
-                    viewModel.addRandomItem()
+                    uiState.addExpenseItem()
                 }
             )
         }
     }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Preview(showBackground = true)
+@Composable
+fun DefaultPreview() {
+    val viewModel = HomeViewModel(context = LocalContext.current)
+    HomeScreen(
+        uiState = HomeUiState(
+            addExpenseItem = { viewModel.addRandomItem() }
+        ) { viewModel.clear() }
+    )
 }

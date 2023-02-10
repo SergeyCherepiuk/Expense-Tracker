@@ -1,4 +1,4 @@
-package com.example.expensetracker
+package com.example.expensetracker.ui
 
 import android.os.Build
 import android.os.Bundle
@@ -20,16 +20,13 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val homeViewModel = HomeViewModel(application = application)
+        val homeViewModel = HomeViewModel(context = this)
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 setContent {
                     ExpenseTrackerTheme {
                         val uiState = homeViewModel.uiState.collectAsState()
-                        HomeScreen(
-                            viewModel = homeViewModel,
-                            uiState = uiState.value
-                        )
+                        HomeScreen(uiState = uiState.value)
                     }
                 }
             }

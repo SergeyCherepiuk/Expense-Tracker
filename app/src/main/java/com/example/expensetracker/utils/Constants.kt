@@ -16,7 +16,7 @@ class Constants {
         )
 
         @RequiresApi(Build.VERSION_CODES.O)
-        val dates: List<LocalDate> = List(5) { index ->
+        val dates: List<LocalDate> = List(10) { index ->
             LocalDate.now().minusDays(index.toLong())
         }
     }
