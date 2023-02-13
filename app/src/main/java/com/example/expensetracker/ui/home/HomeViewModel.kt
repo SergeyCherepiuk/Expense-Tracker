@@ -7,53 +7,25 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.expensetracker.database.AppDatabase
+import com.example.expensetracker.ui.ExpensesUiState
 import com.example.expensetracker.utils.Constants
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 import kotlin.random.Random
 
 @RequiresApi(Build.VERSION_CODES.O)
-data class HomeUiState(
-    val expenses: List<Expense> = listOf(),
-    val isLoading: Boolean = false,
-    val addExpenseItem: () -> Unit,
-    val clearAllExpenseItems: () -> Unit
-)
-
-val HomeUiState.getTotal: Double get() = expenses.sumOf { it.price }
-
-val HomeUiState.groupedByDate: Map<LocalDate, List<Expense>>
-    get() =  expenses
-        .sortedByDescending { it.date }
-        .groupBy { it.date }
-
-val HomeUiState.isEmpty: Boolean get() = expenses.isEmpty()
-
-@RequiresApi(Build.VERSION_CODES.O)
-class HomeViewModel(
-    context: Context
-) : ViewModel() {
+class HomeViewModel(context: Context) : ViewModel() {
     private val database = AppDatabase.getInstance(context)
-    private var _uiState: MutableStateFlow<HomeUiState> = MutableStateFlow(HomeUiState(
-        isLoading = true,
-        addExpenseItem = { addRandomItem() },
-        clearAllExpenseItems = { clear() }
-    ))
-    val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+    private var _uiState = MutableStateFlow(ExpensesUiState(isLoading = true))
+    val uiState: StateFlow<ExpensesUiState> = _uiState.asStateFlow()
 
     init {
         viewModelScope.launch {
-            // delay(1000) // artificial delay
             _uiState.update {
-                it.copy(
-                    expenses = database.expenseDao().getExpenses(),
-                    isLoading = false
-                )
+                it.copy(expenses = database.expenseDao().getExpenses(), isLoading = false)
             }
         }
     }

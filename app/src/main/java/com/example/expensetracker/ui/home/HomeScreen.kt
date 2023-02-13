@@ -23,13 +23,12 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.expensetracker.R
+import com.example.expensetracker.ui.*
 import com.example.expensetracker.ui.theme.*
 import com.example.expensetracker.utils.currentFraction
 import java.time.LocalDate
@@ -40,7 +39,10 @@ import kotlin.math.sqrt
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun HomeScreen(
-    uiState: HomeUiState
+    uiState: ExpensesUiState,
+    addExpenseItem: () -> Unit,
+    clearAllExpenseItems: () -> Unit,
+    navigateToStatistics: () -> Unit
 ) {
     val sheetState = rememberBottomSheetState(
         initialValue = BottomSheetValue.Collapsed,
@@ -68,7 +70,10 @@ fun HomeScreen(
     ) {
         Header(
             scaffoldState = scaffoldState,
-            uiState = uiState
+            uiState = uiState,
+            addExpenseItem = addExpenseItem,
+            clearAllExpenseItems = clearAllExpenseItems,
+            navigateToStatistics = navigateToStatistics
         )
     }
 }
@@ -78,7 +83,7 @@ fun HomeScreen(
 @Composable
 private fun BottomSheetContent(
     sheetState: BottomSheetState,
-    uiState: HomeUiState
+    uiState: ExpensesUiState
 ) {
     Box(
         contentAlignment = Alignment.TopCenter,
@@ -131,7 +136,7 @@ fun EmptyBottomSheet() {
 @Composable
 private fun ItemsList(
     sheetState: BottomSheetState,
-    uiState: HomeUiState
+    uiState: ExpensesUiState
 ) {
     val listState = rememberLazyListState()
     LazyColumn(
@@ -149,7 +154,8 @@ private fun ItemsList(
             groupedExpenses.forEach { (date, expenses) ->
                 DayItem(
                     date = date,
-                    expenses = expenses
+                    expenses = expenses,
+                    uiState = uiState
                 )
                 Spacer(
                     modifier = Modifier
@@ -172,28 +178,50 @@ private fun ItemsList(
 @Composable
 fun DayItem(
     date: LocalDate,
-    expenses: List<Expense>
+    expenses: List<Expense>,
+    uiState: ExpensesUiState
 ) {
     Column(
         modifier = Modifier
             .clip(RoundedCornerShape(25.dp))
             .background(LightYellow)
     ) {
-        val formatter = DateTimeFormatter.ofPattern("MMMM dd")
-        val dateFormatted = when (date) {
-            LocalDate.now() -> "Today"
-            LocalDate.now().minusDays(1) -> "Yesterday"
-            else -> date.format(formatter)
+        val formatterCurrentYear = DateTimeFormatter.ofPattern("MMMM dd")
+        val formatterPastYears = DateTimeFormatter.ofPattern("MMMM dd, yyyy")
+        val formattedDate = when {
+            date == LocalDate.now() -> "Today"
+            date == LocalDate.now().minusDays(1) -> "Yesterday"
+            date.year != LocalDate.now().year -> date.format(formatterPastYears)
+            else -> date.format(formatterCurrentYear)
         }
-        Text(
-            text = dateFormatted,
-            fontSize = 20.sp,
-            fontFamily = SourceSans3,
-            fontWeight = FontWeight.Bold,
-            color = DarkGray,
-            modifier = Modifier
-                .padding(start = 20.dp, top = 15.dp, bottom = 5.dp)
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = formattedDate,
+                fontSize = 20.sp,
+                fontFamily = SourceSans3,
+                fontWeight = FontWeight.Bold,
+                color = DarkGray,
+                modifier = Modifier
+                    .padding(start = 20.dp, top = 15.dp, bottom = 5.dp)
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            if (uiState.dayExpenseCount(date.dayOfMonth, date.month, date.year) > 1) {
+                Text(
+                    text = String.format(
+                        "$%.2f",
+                        uiState.dayExpenseAmount(date.dayOfMonth, date.month, date.year)
+                    ),
+                    fontSize = 14.sp,
+                    fontFamily = SourceSans3,
+                    fontWeight = FontWeight.Medium,
+                    color = Gray,
+                    modifier = Modifier
+                        .padding(end = 20.dp)
+                )
+            }
+        }
         Column {
             expenses.forEachIndexed { index, expense ->
                 ExpenseItem(expense = expense)
@@ -284,7 +312,10 @@ fun ExpenseItem(
 @Composable
 private fun Header(
     scaffoldState: BottomSheetScaffoldState,
-    uiState: HomeUiState
+    uiState: ExpensesUiState,
+    addExpenseItem: () -> Unit,
+    clearAllExpenseItems: () -> Unit,
+    navigateToStatistics: () -> Unit
 ) {
     Box(
         contentAlignment = Alignment.TopCenter,
@@ -308,31 +339,29 @@ private fun Header(
                 fontWeight = FontWeight.Bold,
                 color = LightYellow,
                 modifier = Modifier.clickable {
-                    uiState.clearAllExpenseItems()
+                    navigateToStatistics()
                 }
             )
             Text(
-                text = String.format("$%.2f", uiState.getTotal),
+                text = String.format("$%.2f", uiState.monthExpenseAmount()),
                 fontSize = 58.sp,
                 fontFamily = SourceSans3,
                 fontWeight = FontWeight.Bold,
                 color = LightYellow,
                 modifier = Modifier.clickable {
-                    uiState.addExpenseItem()
+                    addExpenseItem()
+                }
+            )
+            Text(
+                text = "Clear All",
+                fontSize = 16.sp,
+                fontFamily = SourceSans3,
+                fontWeight = FontWeight.Bold,
+                color = LightYellow,
+                modifier = Modifier.clickable {
+                    clearAllExpenseItems()
                 }
             )
         }
     }
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    val viewModel = HomeViewModel(context = LocalContext.current)
-    HomeScreen(
-        uiState = HomeUiState(
-            addExpenseItem = { viewModel.addRandomItem() }
-        ) { viewModel.clear() }
-    )
 }
