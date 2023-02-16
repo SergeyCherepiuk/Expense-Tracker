@@ -7,8 +7,9 @@ import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
+import com.example.expensetracker.ui.components.BottomNavigationContent
 import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
 
 class MainActivity : ComponentActivity() {
@@ -18,11 +19,14 @@ class MainActivity : ComponentActivity() {
         setContent {
             ExpenseTrackerTheme {
                 val navController = rememberNavController()
-                val navigationActions = remember { NavigationActions(navController) }
-                NavigationGraph(
-                    navController = navController,
-                    navigationActions = navigationActions
-                )
+                Scaffold(
+                    bottomBar = { BottomNavigationContent(navController) }
+                ) {
+                    NavigationGraph(
+                        navController = navController,
+                        modifier = Modifier.padding(it)
+                    )
+                }
             }
         }
     }

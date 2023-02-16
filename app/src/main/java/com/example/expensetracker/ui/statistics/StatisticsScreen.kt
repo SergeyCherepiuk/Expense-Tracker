@@ -1,42 +1,51 @@
 package com.example.expensetracker.ui.statistics
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.expensetracker.ui.ExpensesUiState
+import androidx.navigation.NavController
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.composable
+import com.example.expensetracker.ui.*
 import com.example.expensetracker.ui.theme.*
-import com.example.expensetracker.ui.totalExpensesAmount
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun NavGraphBuilder.statistics(viewModel: StatisticsViewModel) {
+    composable(Destinations.STATISTICS_ROUTE) {
+        val uiState = viewModel.uiState.collectAsState()
+        StatisticsScreen(uiState = uiState.value)
+    }
+}
+
+fun NavController.navigateToStatistics() {
+    navigate(Destinations.STATISTICS_ROUTE) {
+        launchSingleTop = true
+    }
+}
 
 @Composable
-fun StatisticsScreen(
-    uiState: ExpensesUiState,
-    navigateUp: () -> Unit
-) {
+fun StatisticsScreen(uiState: ExpensesUiState) {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(DarkGray)
     ) {
-        SplashContent(
-            uiState = uiState,
-            navigateUp = navigateUp
-        )
+        SplashContent(uiState = uiState)
     }
 }
 
 @Composable
-private fun SplashContent(
-    uiState: ExpensesUiState,
-    navigateUp: () -> Unit
-) {
+private fun SplashContent(uiState: ExpensesUiState) {
     Box(
         contentAlignment = Alignment.TopCenter,
         modifier = Modifier
@@ -48,14 +57,11 @@ private fun SplashContent(
             uiState.isLoading -> CircularProgressIndicator(
                 color = DarkGray,
                 strokeWidth = 4.dp,
-                modifier = Modifier
-                    .align(Alignment.Center)
+                modifier = Modifier.align(Alignment.Center)
             )
             else -> Content(
                 uiState = uiState,
-                navigateUp = navigateUp,
-                modifier = Modifier
-                    .align(Alignment.Center)
+                modifier = Modifier.align(Alignment.Center)
             )
         }
     }
@@ -64,19 +70,10 @@ private fun SplashContent(
 @Composable
 private fun Content(
     uiState: ExpensesUiState,
-    navigateUp: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(
-        modifier = modifier
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .clickable {
-                    navigateUp()
-                }
-        ) {
+    Box(modifier = modifier) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = "Total spent",
                 fontSize = 24.sp,

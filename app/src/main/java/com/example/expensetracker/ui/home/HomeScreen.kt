@@ -14,9 +14,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -27,6 +25,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.composable
 import com.example.expensetracker.R
 import com.example.expensetracker.ui.*
 import com.example.expensetracker.ui.theme.*
@@ -36,13 +37,30 @@ import java.time.format.DateTimeFormatter
 import kotlin.math.sqrt
 
 @RequiresApi(Build.VERSION_CODES.O)
+fun NavGraphBuilder.home(viewModel: HomeViewModel) {
+    composable(Destinations.HOME_ROUTE) {
+        val uiState by viewModel.uiState.collectAsState()
+        HomeScreen(
+            uiState = uiState,
+            addExpenseItem = { viewModel.addRandomItem() },
+            clearAllExpenseItems = { viewModel.clear() }
+        )
+    }
+}
+
+fun NavController.navigateToHome() {
+    navigate(Destinations.HOME_ROUTE) {
+        launchSingleTop = true
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun HomeScreen(
     uiState: ExpensesUiState,
     addExpenseItem: () -> Unit,
-    clearAllExpenseItems: () -> Unit,
-    navigateToStatistics: () -> Unit
+    clearAllExpenseItems: () -> Unit
 ) {
     val sheetState = rememberBottomSheetState(
         initialValue = BottomSheetValue.Collapsed,
@@ -56,7 +74,7 @@ fun HomeScreen(
     val configuration = LocalConfiguration.current
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
-        sheetPeekHeight = configuration.screenHeightDp.dp * 0.7f,
+        sheetPeekHeight = configuration.screenHeightDp.dp * 0.65f,
         sheetShape = RoundedCornerShape(
             topStart = 35.dp * sqrt(scaffoldState.currentFraction),
             topEnd = 35.dp * sqrt(scaffoldState.currentFraction)
@@ -72,8 +90,7 @@ fun HomeScreen(
             scaffoldState = scaffoldState,
             uiState = uiState,
             addExpenseItem = addExpenseItem,
-            clearAllExpenseItems = clearAllExpenseItems,
-            navigateToStatistics = navigateToStatistics
+            clearAllExpenseItems = clearAllExpenseItems
         )
     }
 }
@@ -112,8 +129,7 @@ fun EmptyBottomSheet() {
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = Modifier.fillMaxSize()
     ) {
         Text(
             text = "No expenses yet",
@@ -125,8 +141,7 @@ fun EmptyBottomSheet() {
         Image(
             painter = painterResource(id = R.drawable.empty_box),
             contentDescription = null,
-            modifier = Modifier
-                .size(256.dp)
+            modifier = Modifier.size(256.dp)
         )
     }
 }
@@ -145,10 +160,7 @@ private fun ItemsList(
     ) {
         val groupedExpenses: Map<LocalDate, List<Expense>> = uiState.groupedByDate
         item {
-            Spacer(
-                modifier = Modifier
-                    .height(20.dp)
-            )
+            Spacer(modifier = Modifier.height(20.dp))
         }
         item {
             groupedExpenses.forEach { (date, expenses) ->
@@ -157,10 +169,7 @@ private fun ItemsList(
                     expenses = expenses,
                     uiState = uiState
                 )
-                Spacer(
-                    modifier = Modifier
-                        .height(20.dp)
-                )
+                Spacer(modifier = Modifier.height(20.dp))
             }
         }
     }
@@ -203,8 +212,7 @@ fun DayItem(
                 fontFamily = SourceSans3,
                 fontWeight = FontWeight.Bold,
                 color = DarkGray,
-                modifier = Modifier
-                    .padding(start = 20.dp, top = 15.dp, bottom = 5.dp)
+                modifier = Modifier.padding(start = 20.dp, top = 15.dp, bottom = 5.dp)
             )
             Spacer(modifier = Modifier.weight(1f))
             if (uiState.dayExpenseCount(date.dayOfMonth, date.month, date.year) > 1) {
@@ -217,8 +225,7 @@ fun DayItem(
                     fontFamily = SourceSans3,
                     fontWeight = FontWeight.Medium,
                     color = Gray,
-                    modifier = Modifier
-                        .padding(end = 20.dp)
+                    modifier = Modifier.padding(end = 20.dp)
                 )
             }
         }
@@ -239,13 +246,12 @@ fun DayItem(
 }
 
 @Composable
-fun ExpenseItem(
-    expense: Expense
-) {
+fun ExpenseItem(expense: Expense) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(LightYellow)
+            .clickable { /* TODO: Navigate to expense details */ }
             .padding(10.dp)
     ) {
         Box(
@@ -263,10 +269,7 @@ fun ExpenseItem(
                 color = DarkGray
             )
         }
-        Spacer(
-            modifier = Modifier
-                .width(10.dp)
-        )
+        Spacer(modifier = Modifier.width(10.dp))
         Column(
             horizontalAlignment = Alignment.Start,
         ) {
@@ -285,10 +288,7 @@ fun ExpenseItem(
                 color = Gray
             )
         }
-        Spacer(
-            modifier = Modifier
-                .weight(1f)
-        )
+        Spacer(modifier = Modifier.weight(1f))
         Box(
             modifier = Modifier
                 .clip(CircleShape)
@@ -314,8 +314,7 @@ private fun Header(
     scaffoldState: BottomSheetScaffoldState,
     uiState: ExpensesUiState,
     addExpenseItem: () -> Unit,
-    clearAllExpenseItems: () -> Unit,
-    navigateToStatistics: () -> Unit
+    clearAllExpenseItems: () -> Unit
 ) {
     Box(
         contentAlignment = Alignment.TopCenter,
@@ -337,10 +336,7 @@ private fun Header(
                 fontSize = 16.sp,
                 fontFamily = SourceSans3,
                 fontWeight = FontWeight.Bold,
-                color = LightYellow,
-                modifier = Modifier.clickable {
-                    navigateToStatistics()
-                }
+                color = LightYellow
             )
             Text(
                 text = String.format("$%.2f", uiState.monthExpenseAmount()),
@@ -348,9 +344,7 @@ private fun Header(
                 fontFamily = SourceSans3,
                 fontWeight = FontWeight.Bold,
                 color = LightYellow,
-                modifier = Modifier.clickable {
-                    addExpenseItem()
-                }
+                modifier = Modifier.clickable { addExpenseItem() }
             )
             Text(
                 text = "Clear All",
@@ -358,9 +352,7 @@ private fun Header(
                 fontFamily = SourceSans3,
                 fontWeight = FontWeight.Bold,
                 color = LightYellow,
-                modifier = Modifier.clickable {
-                    clearAllExpenseItems()
-                }
+                modifier = Modifier.clickable { clearAllExpenseItems() }
             )
         }
     }
