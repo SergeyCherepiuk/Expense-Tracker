@@ -85,9 +85,7 @@ class HomeViewModel(context: Context) : ViewModel() {
         viewModelScope.launch {
             database.expenseDao().insert(expense)
             _uiState.update {
-                val expenses: MutableList<Expense> = _uiState.value.expenses.toMutableList()
-                expenses.add(expense)
-                it.copy(expenses = expenses)
+                it.copy(expenses = database.expenseDao().getExpenses())
             }
         }
     }
@@ -96,8 +94,7 @@ class HomeViewModel(context: Context) : ViewModel() {
         viewModelScope.launch {
             database.expenseDao().clear()
             _uiState.update {
-                val expenses: MutableList<Expense> = mutableListOf()
-                it.copy(expenses = expenses)
+                it.copy(expenses = database.expenseDao().getExpenses())
             }
         }
     }
