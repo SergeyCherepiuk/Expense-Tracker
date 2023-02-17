@@ -14,7 +14,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import com.example.expensetracker.ui.home.ExpenseDetailsViewModel
 import com.example.expensetracker.ui.home.HomeViewModel
+import com.example.expensetracker.ui.home.expenseDetails
 import com.example.expensetracker.ui.home.home
 import com.example.expensetracker.ui.newexpense.newExpense
 import com.example.expensetracker.ui.statistics.StatisticsViewModel
@@ -56,6 +58,7 @@ fun NavigationGraph(
     startDestination: String = Destinations.HOME_ROUTE
 ) {
     val homeViewModel = HomeViewModel(LocalContext.current)
+    val expenseDetailsViewModel = ExpenseDetailsViewModel(LocalContext.current)
     val statisticsViewModel = StatisticsViewModel(LocalContext.current)
 
     Box(modifier = modifier) {
@@ -63,9 +66,13 @@ fun NavigationGraph(
             navController = navController,
             startDestination = startDestination
         ) {
-            home(viewModel = homeViewModel)
+            home(
+                viewModel = homeViewModel,
+                navController = navController
+            )
             statistics(viewModel = statisticsViewModel)
             newExpense()
+            expenseDetails(viewModel = expenseDetailsViewModel)
         }
     }
 }

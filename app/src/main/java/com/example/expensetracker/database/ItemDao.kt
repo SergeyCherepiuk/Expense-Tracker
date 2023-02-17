@@ -11,6 +11,9 @@ interface ExpenseDao {
     @Query("SELECT * FROM expenses")
     suspend fun getExpenses(): List<Expense>
 
+    @Query("SELECT * FROM expenses WHERE id = :id")
+    suspend fun getExpenseById(id: Int): Expense
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(item: Expense)
 

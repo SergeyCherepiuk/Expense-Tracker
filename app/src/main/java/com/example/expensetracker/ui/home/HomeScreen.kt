@@ -1,6 +1,5 @@
 package com.example.expensetracker.ui.home
 
-import com.example.expensetracker.model.Expense
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.CubicBezierEasing
@@ -29,6 +28,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.example.expensetracker.R
+import com.example.expensetracker.model.Expense
 import com.example.expensetracker.ui.*
 import com.example.expensetracker.ui.theme.*
 import com.example.expensetracker.utils.currentFraction
@@ -37,13 +37,17 @@ import java.time.format.DateTimeFormatter
 import kotlin.math.sqrt
 
 @RequiresApi(Build.VERSION_CODES.O)
-fun NavGraphBuilder.home(viewModel: HomeViewModel) {
+fun NavGraphBuilder.home(
+    viewModel: HomeViewModel,
+    navController: NavController
+) {
     composable(Destinations.HOME_ROUTE) {
         val uiState by viewModel.uiState.collectAsState()
         HomeScreen(
             uiState = uiState,
             addExpenseItem = { viewModel.addRandomItem() },
-            clearAllExpenseItems = { viewModel.clear() }
+            clearAllExpenseItems = { viewModel.clear() },
+            navigateToExpenseDetails = { id -> navController.navigateToExpenseDetails(id) },
         )
     }
 }
@@ -58,9 +62,10 @@ fun NavController.navigateToHome() {
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun HomeScreen(
-    uiState: ExpensesUiState,
+    uiState: HomeUiState,
     addExpenseItem: () -> Unit,
-    clearAllExpenseItems: () -> Unit
+    clearAllExpenseItems: () -> Unit,
+    navigateToExpenseDetails: (Int) -> Unit
 ) {
     val sheetState = rememberBottomSheetState(
         initialValue = BottomSheetValue.Collapsed,
@@ -83,6 +88,7 @@ fun HomeScreen(
             BottomSheetContent(
                 sheetState = sheetState,
                 uiState = uiState,
+                navigateToExpenseDetails = navigateToExpenseDetails
             )
         }
     ) {
@@ -100,7 +106,8 @@ fun HomeScreen(
 @Composable
 private fun BottomSheetContent(
     sheetState: BottomSheetState,
-    uiState: ExpensesUiState
+    uiState: HomeUiState,
+    navigateToExpenseDetails: (Int) -> Unit
 ) {
     Box(
         contentAlignment = Alignment.TopCenter,
@@ -118,7 +125,8 @@ private fun BottomSheetContent(
             uiState.isEmpty -> EmptyBottomSheet()
             else -> ItemsList(
                 sheetState = sheetState,
-                uiState = uiState
+                uiState = uiState,
+                navigateToExpenseDetails = navigateToExpenseDetails
             )
         }
     }
@@ -151,7 +159,8 @@ fun EmptyBottomSheet() {
 @Composable
 private fun ItemsList(
     sheetState: BottomSheetState,
-    uiState: ExpensesUiState
+    uiState: HomeUiState,
+    navigateToExpenseDetails: (Int) -> Unit
 ) {
     val listState = rememberLazyListState()
     LazyColumn(
@@ -167,7 +176,8 @@ private fun ItemsList(
                 DayItem(
                     date = date,
                     expenses = expenses,
-                    uiState = uiState
+                    uiState = uiState,
+                    navigateToExpenseDetails = navigateToExpenseDetails
                 )
                 Spacer(modifier = Modifier.height(20.dp))
             }
@@ -188,7 +198,8 @@ private fun ItemsList(
 fun DayItem(
     date: LocalDate,
     expenses: List<Expense>,
-    uiState: ExpensesUiState
+    uiState: HomeUiState,
+    navigateToExpenseDetails: (Int) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -231,7 +242,10 @@ fun DayItem(
         }
         Column {
             expenses.forEachIndexed { index, expense ->
-                ExpenseItem(expense = expense)
+                ExpenseItem(
+                    expense = expense,
+                    navigateToExpenseDetails = navigateToExpenseDetails
+                )
                 if (index != expenses.size-1) {
                     Spacer(
                         modifier = Modifier
@@ -246,12 +260,15 @@ fun DayItem(
 }
 
 @Composable
-fun ExpenseItem(expense: Expense) {
+fun ExpenseItem(
+    expense: Expense,
+    navigateToExpenseDetails: (Int) -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(LightYellow)
-            .clickable { /* TODO: Navigate to expense details */ }
+            .clickable { expense.id?.let { navigateToExpenseDetails(it) } }
             .padding(10.dp)
     ) {
         Box(
@@ -312,7 +329,7 @@ fun ExpenseItem(expense: Expense) {
 @Composable
 private fun Header(
     scaffoldState: BottomSheetScaffoldState,
-    uiState: ExpensesUiState,
+    uiState: HomeUiState,
     addExpenseItem: () -> Unit,
     clearAllExpenseItems: () -> Unit
 ) {

@@ -34,7 +34,7 @@ fun NavController.navigateToStatistics() {
 }
 
 @Composable
-fun StatisticsScreen(uiState: ExpensesUiState) {
+fun StatisticsScreen(uiState: StatisticsUiState) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -45,7 +45,7 @@ fun StatisticsScreen(uiState: ExpensesUiState) {
 }
 
 @Composable
-private fun SplashContent(uiState: ExpensesUiState) {
+private fun SplashContent(uiState: StatisticsUiState) {
     Box(
         contentAlignment = Alignment.TopCenter,
         modifier = Modifier
@@ -69,7 +69,7 @@ private fun SplashContent(uiState: ExpensesUiState) {
 
 @Composable
 private fun Content(
-    uiState: ExpensesUiState,
+    uiState: StatisticsUiState,
     modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier) {

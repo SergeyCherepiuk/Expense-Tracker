@@ -7,20 +7,60 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.expensetracker.database.AppDatabase
-import com.example.expensetracker.ui.ExpensesUiState
 import com.example.expensetracker.utils.Constants
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.Month
 import kotlin.random.Random
+
+@RequiresApi(Build.VERSION_CODES.O)
+data class HomeUiState(
+    val expenses: List<Expense> = listOf(),
+    val isLoading: Boolean = false
+)
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun HomeUiState.monthExpenseAmount(
+    month: Month = LocalDate.now().month,
+    year: Int = LocalDate.now().year
+): Double = expenses
+    .filter { it.date.month == month && it.date.year == year }
+    .sumOf { it.price }
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun HomeUiState.dayExpenseAmount(
+    dayOfMonth: Int = LocalDate.now().dayOfMonth,
+    month: Month = LocalDate.now().month,
+    year: Int = LocalDate.now().year
+): Double = expenses
+    .filter { it.date.dayOfMonth == dayOfMonth && it.date.month == month && it.date.year == year }
+    .sumOf { it.price }
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun HomeUiState.dayExpenseCount(
+    dayOfMonth: Int = LocalDate.now().dayOfMonth,
+    month: Month = LocalDate.now().month,
+    year: Int = LocalDate.now().year
+): Int = expenses
+    .filter { it.date.dayOfMonth == dayOfMonth && it.date.month == month && it.date.year == year }
+    .size
+
+val HomeUiState.groupedByDate: Map<LocalDate, List<Expense>>
+    get() = expenses
+        .sortedByDescending { it.date }
+        .groupBy { it.date }
+
+val HomeUiState.isEmpty: Boolean get() = expenses.isEmpty()
 
 @RequiresApi(Build.VERSION_CODES.O)
 class HomeViewModel(context: Context) : ViewModel() {
     private val database = AppDatabase.getInstance(context)
-    private var _uiState = MutableStateFlow(ExpensesUiState(isLoading = true))
-    val uiState: StateFlow<ExpensesUiState> = _uiState.asStateFlow()
+    private var _uiState = MutableStateFlow(HomeUiState(isLoading = true))
+    val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     init {
         viewModelScope.launch {
