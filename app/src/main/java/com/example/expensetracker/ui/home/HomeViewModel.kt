@@ -59,11 +59,14 @@ val HomeUiState.isEmpty: Boolean get() = expenses.isEmpty()
 @RequiresApi(Build.VERSION_CODES.O)
 class HomeViewModel(context: Context) : ViewModel() {
     private val database = AppDatabase.getInstance(context)
-    private var _uiState = MutableStateFlow(HomeUiState(isLoading = true))
+    private var _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     init {
         viewModelScope.launch {
+            _uiState.update {
+                it.copy(isLoading = true)
+            }
             _uiState.update {
                 it.copy(expenses = database.expenseDao().getExpenses(), isLoading = false)
             }

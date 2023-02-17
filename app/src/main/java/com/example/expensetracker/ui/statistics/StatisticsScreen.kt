@@ -82,7 +82,7 @@ private fun Content(
                 color = Yellow
             )
             Text(
-                text = String.format("$%.2f", uiState.totalExpensesAmount),
+                text = String.format("$%.2f", uiState.totalExpensesAmount()),
                 fontFamily = SourceSans3,
                 fontWeight = FontWeight.Bold,
                 fontSize = 64.sp,

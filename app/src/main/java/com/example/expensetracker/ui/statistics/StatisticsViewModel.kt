@@ -18,6 +18,7 @@ import java.time.Month
 @RequiresApi(Build.VERSION_CODES.O)
 data class StatisticsUiState(
     val expenses: List<Expense> = listOf(),
+    val totalExpensesAmount: () -> Double,
     val isLoading: Boolean = false
 )
 
@@ -29,21 +30,32 @@ fun StatisticsUiState.monthExpenseAmount(
     .filter { it.date.month == month && it.date.year == year }
     .sumOf { it.price }
 
-val StatisticsUiState.totalExpensesAmount: Double get() = expenses.sumOf { it.price }
-
 val StatisticsUiState.isEmpty: Boolean get() = expenses.isEmpty()
 
 @RequiresApi(Build.VERSION_CODES.O)
 class StatisticsViewModel(context: Context) : ViewModel() {
     private val database = AppDatabase.getInstance(context)
-    private val _uiState = MutableStateFlow(StatisticsUiState(isLoading = true))
+    private val _uiState = MutableStateFlow(
+        StatisticsUiState(
+            totalExpensesAmount = {
+                val expenses: List<Expense> = getExpenses()
+                return@StatisticsUiState expenses.sumOf { it.price }
+            }
+        )
+    )
     val uiState: StateFlow<StatisticsUiState> = _uiState.asStateFlow()
 
-    init {
+    init { getExpenses() }
+
+    fun getExpenses(): List<Expense> {
         viewModelScope.launch {
+            _uiState.update {
+                it.copy(isLoading = true)
+            }
             _uiState.update {
                 it.copy(expenses = database.expenseDao().getExpenses(), isLoading = false)
             }
         }
+        return _uiState.value.expenses
     }
 }
