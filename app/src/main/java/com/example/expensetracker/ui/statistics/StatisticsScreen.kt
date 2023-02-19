@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -23,11 +24,9 @@ import com.example.expensetracker.ui.navigation.Destinations
 import com.example.expensetracker.ui.theme.*
 
 @RequiresApi(Build.VERSION_CODES.O)
-fun NavGraphBuilder.statistics(
-    navController: NavController,
-    viewModel: StatisticsViewModel
-) {
+fun NavGraphBuilder.statistics(navController: NavController) {
     composable(Destinations.STATISTICS_ROUTE) {
+        val viewModel = StatisticsViewModel(LocalContext.current)
         val uiState = viewModel.uiState.collectAsState()
         Scaffold(
             bottomBar = { BottomNavigationContent(navController = navController) }

@@ -19,5 +19,6 @@ class Constants {
         val dates: List<LocalDate> = List(45) { index ->
             LocalDate.now().minusDays(index.toLong())
         }
+        var counter = 0
     }
 }

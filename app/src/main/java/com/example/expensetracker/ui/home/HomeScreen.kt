@@ -20,6 +20,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -39,11 +40,9 @@ import java.time.format.DateTimeFormatter
 import kotlin.math.sqrt
 
 @RequiresApi(Build.VERSION_CODES.O)
-fun NavGraphBuilder.home(
-    viewModel: HomeViewModel,
-    navController: NavController
-) {
+fun NavGraphBuilder.home(navController: NavController) {
     composable(Destinations.HOME_ROUTE) {
+        val viewModel = HomeViewModel(LocalContext.current)
         val uiState by viewModel.uiState.collectAsState()
         Scaffold(
             bottomBar = { BottomNavigationContent(navController = navController) }
