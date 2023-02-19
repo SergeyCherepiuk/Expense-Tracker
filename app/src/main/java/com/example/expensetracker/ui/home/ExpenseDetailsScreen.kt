@@ -21,7 +21,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.expensetracker.model.Expense
-import com.example.expensetracker.ui.Destinations
+import com.example.expensetracker.ui.navigation.Destinations
 import com.example.expensetracker.ui.theme.*
 import java.time.format.DateTimeFormatter
 
@@ -32,7 +32,8 @@ fun NavGraphBuilder.expenseDetails(viewModel: ExpenseDetailsViewModel) {
         arguments = listOf(navArgument("id") { type = NavType.IntType })
     ) { entry ->
         val uiState by viewModel.uiState.collectAsState()
-        viewModel.getExpenseById(entry.arguments?.getInt("id"))
+        val id = entry.arguments?.getInt("id")
+        viewModel.getExpenseById(id)
         ExpenseDetailsScreen(uiState)
     }
 }

@@ -12,15 +12,9 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.expensetracker.ui.Screen
+import com.example.expensetracker.ui.navigation.screens
 import com.example.expensetracker.ui.theme.DarkGray
 import com.example.expensetracker.ui.theme.LightGray
-
-private val screens = listOf(
-    Screen.Statistics,
-    Screen.Home,
-    Screen.NewExpense,
-)
 
 @Composable
 fun BottomNavigationContent(navController: NavController) {

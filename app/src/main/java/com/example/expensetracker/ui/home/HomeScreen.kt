@@ -30,6 +30,8 @@ import androidx.navigation.compose.composable
 import com.example.expensetracker.R
 import com.example.expensetracker.model.Expense
 import com.example.expensetracker.ui.*
+import com.example.expensetracker.ui.components.BottomNavigationContent
+import com.example.expensetracker.ui.navigation.Destinations
 import com.example.expensetracker.ui.theme.*
 import com.example.expensetracker.utils.currentFraction
 import java.time.LocalDate
@@ -43,12 +45,18 @@ fun NavGraphBuilder.home(
 ) {
     composable(Destinations.HOME_ROUTE) {
         val uiState by viewModel.uiState.collectAsState()
-        HomeScreen(
-            uiState = uiState,
-            addExpenseItem = { viewModel.addRandomItem() },
-            clearAllExpenseItems = { viewModel.clear() },
-            navigateToExpenseDetails = { id -> navController.navigateToExpenseDetails(id) },
-        )
+        Scaffold(
+            bottomBar = { BottomNavigationContent(navController = navController) }
+        ) {
+            Box(modifier = Modifier.padding(it)) {
+                HomeScreen(
+                    uiState = uiState,
+                    addExpenseItem = { viewModel.addRandomItem() },
+                    clearAllExpenseItems = { viewModel.clear() },
+                    navigateToExpenseDetails = { id -> navController.navigateToExpenseDetails(id) }
+                )
+            }
+        }
     }
 }
 

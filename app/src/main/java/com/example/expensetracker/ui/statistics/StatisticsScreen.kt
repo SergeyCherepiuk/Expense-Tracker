@@ -5,6 +5,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -17,13 +18,24 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.example.expensetracker.ui.*
+import com.example.expensetracker.ui.components.BottomNavigationContent
+import com.example.expensetracker.ui.navigation.Destinations
 import com.example.expensetracker.ui.theme.*
 
 @RequiresApi(Build.VERSION_CODES.O)
-fun NavGraphBuilder.statistics(viewModel: StatisticsViewModel) {
+fun NavGraphBuilder.statistics(
+    navController: NavController,
+    viewModel: StatisticsViewModel
+) {
     composable(Destinations.STATISTICS_ROUTE) {
         val uiState = viewModel.uiState.collectAsState()
-        StatisticsScreen(uiState = uiState.value)
+        Scaffold(
+            bottomBar = { BottomNavigationContent(navController = navController) }
+        ) {
+            Box(modifier = Modifier.padding(it)) {
+                StatisticsScreen(uiState = uiState.value)
+            }
+        }
     }
 }
 
