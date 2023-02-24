@@ -12,7 +12,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -27,12 +26,11 @@ import com.example.expensetracker.ui.theme.*
 import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
-fun NavGraphBuilder.expenseDetails() {
+fun NavGraphBuilder.expenseDetails(viewModel: ExpenseDetailsViewModel) {
     composable(
         Destinations.EXPENSE_DETAILS_ROUTE.plus("/{id}"),
         arguments = listOf(navArgument("id") { type = NavType.IntType })
     ) { entry ->
-        val viewModel = ExpenseDetailsViewModel(LocalContext.current)
         val uiState by viewModel.uiState.collectAsState()
         val id = entry.arguments?.getInt("id")
         viewModel.getExpenseById(id)

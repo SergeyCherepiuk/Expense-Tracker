@@ -24,12 +24,13 @@ class ExpenseDetailsViewModel(context: Context) : ViewModel() {
     fun getExpenseById(expenseId: Int?) {
         expenseId?.let { id ->
             viewModelScope.launch {
-                _uiState.update {
-                    it.copy(isLoading = true)
-                }
-                _uiState.update {
-                    it.copy(expense = database.expenseDao().getExpenseById(id), isLoading = false)
-                }
+                _uiState.update { it.copy(
+                    isLoading = true
+                ) }
+                _uiState.update { it.copy(
+                    expense = database.expenseDao().getExpenseById(id),
+                    isLoading = false
+                ) }
             }
         }
     }

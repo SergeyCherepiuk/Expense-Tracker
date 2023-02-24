@@ -1,7 +1,6 @@
 package com.example.expensetracker.ui.navigation
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DonutLarge
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -30,15 +29,9 @@ sealed class Screen(
         label = "Statistics",
         route = Destinations.STATISTICS_ROUTE
     )
-    object NewExpense : Screen(
-        icon = Icons.Default.Add,
-        label = "New expense",
-        route = Destinations.NEW_EXPENSE_ROUTE
-    )
 }
 
 val screens = listOf(
-    Screen.Statistics,
     Screen.Home,
-    Screen.NewExpense,
+    Screen.Statistics
 )

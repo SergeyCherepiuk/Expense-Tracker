@@ -49,12 +49,13 @@ class StatisticsViewModel(context: Context) : ViewModel() {
 
     fun getExpenses(): List<Expense> {
         viewModelScope.launch {
-            _uiState.update {
-                it.copy(isLoading = true)
-            }
-            _uiState.update {
-                it.copy(expenses = database.expenseDao().getExpenses(), isLoading = false)
-            }
+            _uiState.update { it.copy(
+                isLoading = true
+            ) }
+            _uiState.update { it.copy(
+                expenses = database.expenseDao().getExpenses(),
+                isLoading = false
+            ) }
         }
         return _uiState.value.expenses
     }

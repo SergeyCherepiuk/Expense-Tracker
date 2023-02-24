@@ -2,17 +2,23 @@ package com.example.expensetracker.ui.home
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.*
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ArrowUpward
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,7 +26,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -33,16 +38,20 @@ import com.example.expensetracker.model.Expense
 import com.example.expensetracker.ui.*
 import com.example.expensetracker.ui.components.BottomNavigationContent
 import com.example.expensetracker.ui.navigation.Destinations
+import com.example.expensetracker.ui.newexpense.navigateToNewExpense
 import com.example.expensetracker.ui.theme.*
 import com.example.expensetracker.utils.currentFraction
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlin.math.sqrt
 
 @RequiresApi(Build.VERSION_CODES.O)
-fun NavGraphBuilder.home(navController: NavController) {
+fun NavGraphBuilder.home(
+    navController: NavController,
+    viewModel: HomeViewModel
+) {
     composable(Destinations.HOME_ROUTE) {
-        val viewModel = HomeViewModel(LocalContext.current)
         val uiState by viewModel.uiState.collectAsState()
         Scaffold(
             bottomBar = { BottomNavigationContent(navController = navController) }
@@ -52,7 +61,8 @@ fun NavGraphBuilder.home(navController: NavController) {
                     uiState = uiState,
                     addExpenseItem = { viewModel.addRandomItem() },
                     clearAllExpenseItems = { viewModel.clear() },
-                    navigateToExpenseDetails = { id -> navController.navigateToExpenseDetails(id) }
+                    navigateToExpenseDetails = { id -> navController.navigateToExpenseDetails(id) },
+                    navigateToNewExpense = { navController.navigateToNewExpense() }
                 )
             }
         }
@@ -72,7 +82,8 @@ fun HomeScreen(
     uiState: HomeUiState,
     addExpenseItem: () -> Unit,
     clearAllExpenseItems: () -> Unit,
-    navigateToExpenseDetails: (Int) -> Unit
+    navigateToExpenseDetails: (Int) -> Unit,
+    navigateToNewExpense: () -> Unit
 ) {
     val sheetState = rememberBottomSheetState(
         initialValue = BottomSheetValue.Collapsed,
@@ -82,6 +93,7 @@ fun HomeScreen(
         )
     )
     val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = sheetState)
+    val listState = rememberLazyListState()
 
     val configuration = LocalConfiguration.current
     BottomSheetScaffold(
@@ -94,6 +106,7 @@ fun HomeScreen(
         sheetContent = {
             BottomSheetContent(
                 sheetState = sheetState,
+                listState = listState,
                 uiState = uiState,
                 navigateToExpenseDetails = navigateToExpenseDetails
             )
@@ -103,8 +116,63 @@ fun HomeScreen(
             scaffoldState = scaffoldState,
             uiState = uiState,
             addExpenseItem = addExpenseItem,
-            clearAllExpenseItems = clearAllExpenseItems
+            clearAllExpenseItems = clearAllExpenseItems,
+            navigateToNewExpense = navigateToNewExpense
         )
+    }
+
+    ScrollToTopButton(
+        listState = listState,
+        sheetState = sheetState
+    )
+}
+
+@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
+@Composable
+private fun ScrollToTopButton(
+    listState: LazyListState,
+    sheetState: BottomSheetState
+) {
+    val coroutineScope = rememberCoroutineScope()
+    val isVisible by remember {
+        derivedStateOf {
+            listState.firstVisibleItemIndex > 3
+        }
+    }
+    Box(
+        contentAlignment = Alignment.BottomEnd,
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(20.dp)
+    ) {
+        AnimatedVisibility(
+            visible = isVisible,
+            enter = scaleIn(
+                initialScale = 0f,
+                animationSpec = tween(durationMillis = 300, easing = EaseOut)
+            ),
+            exit = scaleOut(
+                targetScale = 0f,
+                animationSpec = tween(durationMillis = 300, easing = EaseIn)
+            ),
+        ) {
+            FloatingActionButton(
+                onClick = {
+                    coroutineScope.launch {
+                        listState.animateScrollToItem(index = 0)
+                        sheetState.collapse()
+                    }
+                },
+                shape = RoundedCornerShape(16.dp),
+                backgroundColor = DarkGray
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.ArrowUpward,
+                    contentDescription = null,
+                    tint = LightYellow,
+                )
+            }
+        }
     }
 }
 
@@ -113,6 +181,7 @@ fun HomeScreen(
 @Composable
 private fun BottomSheetContent(
     sheetState: BottomSheetState,
+    listState: LazyListState,
     uiState: HomeUiState,
     navigateToExpenseDetails: (Int) -> Unit
 ) {
@@ -132,6 +201,7 @@ private fun BottomSheetContent(
             uiState.isEmpty -> EmptyBottomSheet()
             else -> ItemsList(
                 sheetState = sheetState,
+                listState = listState,
                 uiState = uiState,
                 navigateToExpenseDetails = navigateToExpenseDetails
             )
@@ -166,10 +236,10 @@ fun EmptyBottomSheet() {
 @Composable
 private fun ItemsList(
     sheetState: BottomSheetState,
+    listState: LazyListState,
     uiState: HomeUiState,
     navigateToExpenseDetails: (Int) -> Unit
 ) {
-    val listState = rememberLazyListState()
     LazyColumn(
         horizontalAlignment = Alignment.CenterHorizontally,
         state = listState
@@ -178,16 +248,16 @@ private fun ItemsList(
         item {
             Spacer(modifier = Modifier.height(20.dp))
         }
-        item {
-            groupedExpenses.forEach { (date, expenses) ->
-                DayItem(
-                    date = date,
-                    expenses = expenses,
-                    uiState = uiState,
-                    navigateToExpenseDetails = navigateToExpenseDetails
-                )
-                Spacer(modifier = Modifier.height(20.dp))
-            }
+        items(groupedExpenses.keys.size) { index ->
+            val date = groupedExpenses.keys.elementAt(index)
+            val expenses = groupedExpenses[date] ?: emptyList()
+            DayItem(
+                date = date,
+                expenses = expenses,
+                uiState = uiState,
+                navigateToExpenseDetails = navigateToExpenseDetails
+            )
+            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 
@@ -338,7 +408,8 @@ private fun Header(
     scaffoldState: BottomSheetScaffoldState,
     uiState: HomeUiState,
     addExpenseItem: () -> Unit,
-    clearAllExpenseItems: () -> Unit
+    clearAllExpenseItems: () -> Unit,
+    navigateToNewExpense: () -> Unit
 ) {
     Box(
         contentAlignment = Alignment.TopCenter,
@@ -360,7 +431,8 @@ private fun Header(
                 fontSize = 16.sp,
                 fontFamily = SourceSans3,
                 fontWeight = FontWeight.Bold,
-                color = LightYellow
+                color = LightYellow,
+                modifier = Modifier.clickable { navigateToNewExpense() }
             )
             Text(
                 text = String.format("$%.2f", uiState.monthExpenseAmount()),

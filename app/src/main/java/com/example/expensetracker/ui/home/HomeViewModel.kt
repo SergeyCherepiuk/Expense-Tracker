@@ -64,12 +64,13 @@ class HomeViewModel(context: Context) : ViewModel() {
 
     init {
         viewModelScope.launch {
-            _uiState.update {
-                it.copy(isLoading = true)
-            }
-            _uiState.update {
-                it.copy(expenses = database.expenseDao().getExpenses(), isLoading = false)
-            }
+            _uiState.update { it.copy(
+                isLoading = true
+            ) }
+            _uiState.update { it.copy(
+                expenses = database.expenseDao().getExpenses(),
+                isLoading = false
+            ) }
         }
     }
 
@@ -84,18 +85,18 @@ class HomeViewModel(context: Context) : ViewModel() {
         )
         viewModelScope.launch {
             database.expenseDao().insert(expense)
-            _uiState.update {
-                it.copy(expenses = database.expenseDao().getExpenses())
-            }
+            _uiState.update { it.copy(
+                expenses = database.expenseDao().getExpenses()
+            ) }
         }
     }
 
     fun clear() { // for testing only
         viewModelScope.launch {
             database.expenseDao().clear()
-            _uiState.update {
-                it.copy(expenses = database.expenseDao().getExpenses())
-            }
+            _uiState.update { it.copy(
+                expenses = database.expenseDao().getExpenses()
+            ) }
         }
     }
 }
